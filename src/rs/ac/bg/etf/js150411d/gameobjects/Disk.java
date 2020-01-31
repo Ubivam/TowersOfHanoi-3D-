@@ -4,32 +4,32 @@ import rs.ac.bg.etf.js150411d.Shading;
 import rs.ac.bg.etf.js150411d.shapes.DiskMesh;
 
 
-
 public class Disk extends DiskMesh implements Selectable {
 
     private Rod rod;
     private Shading material;
-    private  boolean selected;
+    private boolean selected;
 
     public Disk(double innerRadius, double outerRadius, float hegiht) {
         super(innerRadius, outerRadius, hegiht);
         this.setOnMouseEntered((event -> {
-            if(rod.getHanoi().getInteractionEnabled()){
-                if(isSelectable()){
-                    if(!selected){
-                        setMaterial(material.getSelectMaterial());
-                    } else {
-                        setMaterial(material.getUnselectableMaterial());
+            if (rod.getHanoi().getInteractionEnabled()) {
+                if (isSelectable()) {
+                    if (!selected) {
+                        setMaterial(material.getSelectableMaterial());
                     }
+                } else {
+                    setMaterial(material.getUnselectableMaterial());
                 }
+
             }
         }));
         this.setOnMouseExited((event -> {
-            if(rod.getHanoi().getInteractionEnabled()){
-                if(!selected){
+            if (rod.getHanoi().getInteractionEnabled()) {
+                if (!selected) {
                     setMaterial(material.getMaterial());
                 } else {
-                    setMaterial(material.getSelectMaterial());
+                    setMaterial(material.getSelectedMaterial());
                 }
             }
         }));
@@ -39,24 +39,27 @@ public class Disk extends DiskMesh implements Selectable {
         this.rod = rod;
     }
 
-    public Rod getRod(){
+    public Rod getRod() {
         return rod;
     }
-    public void setSelected(boolean selected){
+
+    public void setSelected(boolean selected) {
         this.selected = selected;
-        if(selected){
-            setMaterial(material.getSelectMaterial());
+        if (selected) {
+            setMaterial(material.getSelectedMaterial());
         } else {
             setMaterial(material.getMaterial());
         }
     }
-    public void setShading(Shading material){
+
+    public void setShading(Shading material) {
         this.material = material;
-        if(!selected){
+        if (!selected) {
             setMaterial(material.getMaterial());
         }
     }
-    public  boolean isSelectable() {
+
+    public boolean isSelectable() {
         return rod != null && rod.peek() == this;
     }
 }

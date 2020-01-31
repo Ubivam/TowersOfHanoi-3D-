@@ -14,94 +14,101 @@ public class Rod extends Cylinder implements Selectable {
     private boolean selected;
 
     public Rod(double radius, double height, HanoiGroup hanoi) {
-        super(radius,height);
+        super(radius, height);
         this.hanoi = hanoi;
 
         this.setOnMouseEntered((event -> {
-            if(hanoi.getInteractionEnabled()){
-                if(isSelectable()){
-                    if(!selected){
-                        setMaterial(material.getSelectMaterial());
-                    } else {
-                        setMaterial(material.getUnselectableMaterial());
+            if (hanoi.getInteractionEnabled()) {
+                if (isSelectable()) {
+                    if (!selected) {
+                        setMaterial(material.getSelectableMaterial());
                     }
+                } else {
+                    setMaterial(material.getUnselectableMaterial());
                 }
+
             }
         }));
         this.setOnMouseExited((event -> {
-            if(hanoi.getInteractionEnabled()){
-                if(!selected){
+            if (hanoi.getInteractionEnabled()) {
+                if (!selected) {
                     setMaterial(material.getMaterial());
                 } else {
-                    setMaterial(material.getSelectMaterial());
+                    setMaterial(material.getSelectedMaterial());
                 }
             }
         }));
     }
 
     //Stack Interaction
-    public void push(Disk disk){
+    public void push(Disk disk) {
         disk_stack.push(disk);
         disk.setRod(this);
     }
-    public Disk pop(){
-        Disk topDisk =null;
-        try{
+
+    public Disk pop() {
+        Disk topDisk = null;
+        try {
             topDisk = disk_stack.pop();
-        }catch (EmptyStackException e){}
-        if(topDisk != null){
+        } catch (EmptyStackException e) {
+        }
+        if (topDisk != null) {
             topDisk.setRod(null);
         }
         return topDisk;
     }
-    public Disk peek(){
-        try{
+
+    public Disk peek() {
+        try {
             return disk_stack.peek();
-        }catch (EmptyStackException e)
-        {
+        } catch (EmptyStackException e) {
             return null;
         }
     }
-    public void clear(){
+
+    public void clear() {
         disk_stack.clear();
     }
 
     //Gettters and informations
-    public Disk[] getDisks(){
-        return (Disk[]) disk_stack.toArray();
+    public Object[] getDisks() {
+        return disk_stack.toArray();
     }
 
     public int getNumberOfDisks() {
         return disk_stack.size();
     }
-    public void getDiskFrom(Rod rod){
+
+    public void getDiskFrom(Rod rod) {
         Stack<Disk> temp = disk_stack;
         disk_stack = rod.disk_stack;
-        for(Disk disk : disk_stack) {
+        for (Disk disk : disk_stack) {
             disk.setRod(this);
         }
         rod.disk_stack = temp;
     }
-    public  HanoiGroup getHanoi() {
+
+    public HanoiGroup getHanoi() {
         return hanoi;
     }
-    public boolean isSelectable(){
-        var  exists = hanoi.getSelectedDisk() != null;
-        var selectable = disk_stack.isEmpty() || disk_stack.peek().getOuterRadius() > hanoi.getSelectedDisk().getOuterRadius();
-        return exists && selectable;
+
+    public boolean isSelectable() {
+        return hanoi.getSelectedDisk() != null && (disk_stack.isEmpty() || disk_stack.peek().getOuterRadius() > hanoi.getSelectedDisk().getOuterRadius());
     }
+
     //Set Materials
-    public void setSelected(boolean selected){
+    public void setSelected(boolean selected) {
         this.selected = selected;
-        if(selected){
-            setMaterial(material.getSelectMaterial());
+        if (selected) {
+            setMaterial(material.getSelectedMaterial());
         } else {
             setMaterial(material.getMaterial());
         }
     }
-    public void setShading(Shading material){
+
+    public void setShading(Shading material) {
         this.material = material;
-        if(!selected){
+        if (!selected) {
             this.setMaterial(material.getMaterial());
         }
     }

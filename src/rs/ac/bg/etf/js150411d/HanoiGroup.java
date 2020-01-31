@@ -3,6 +3,9 @@ package rs.ac.bg.etf.js150411d;
 import javafx.scene.Group;
 import javafx.scene.input.PickResult;
 import javafx.scene.shape.Shape3D;
+import rs.ac.bg.etf.js150411d.animations.DiskFlipper;
+import rs.ac.bg.etf.js150411d.animations.DiskMover;
+import rs.ac.bg.etf.js150411d.gameflow.DiskMove;
 import rs.ac.bg.etf.js150411d.gameobjects.Disk;
 import rs.ac.bg.etf.js150411d.gameobjects.Platform;
 import rs.ac.bg.etf.js150411d.gameobjects.Rod;
@@ -36,7 +39,7 @@ public class HanoiGroup extends Group {
         this.material = material;
         this.numberOFDisks = numberOFDisks <= 0 ? 1 : numberOFDisks;
 
-        int index = 0;
+        int index = -1;
         platform = new Platform(PLATFORM_WIDTH, PLATFORM_HEIGHT, PLATFORM_DEPTH);
         platform.setTranslateY(0.5 * PLATFORM_HEIGHT);
 
@@ -66,6 +69,48 @@ public class HanoiGroup extends Group {
                         selectedDisk.setSelected(false);
                         selectedDisk = (Disk) shape;
                         selectedDisk.setSelected(true);
+                    } else if (selectedDisk == null) {
+                        selectedDisk = (Disk) shape;
+                        selectedDisk.setSelected(true);
+                    }
+                } else if (shape instanceof Rod) {
+                    Rod rod = (Rod) shape;
+                    if(selectedDisk != null){
+                        if(selectedDisk.getRod() == rod){
+                            return;
+                        }
+                        if(!rod.isSelectable()){
+                            return;
+                        }
+                        if(selectedRod != null && selectedRod != shape){
+                            selectedRod.setSelected(false);
+                            selectedRod = rod;
+                            selectedRod.setSelected(true);
+                        } else if (selectedRod == null) {
+                            selectedRod = rod;
+                            selectedRod.setSelected(true);
+                        }
+                    }
+                    if(selectedDisk != null && selectedRod !=null){
+                        gameWindow.getButtonGameReset().setDisable(true);
+
+                        interactionEnabled = false;
+
+                        new DiskFlipper(this, new DiskMove(selectedDisk, selectedRod)).start(()->{
+
+                            gameWindow.getButtonGameReset().setDisable(false);
+
+                            selectedRod = null;
+                            selectedDisk = null;
+                            if(isSolved()){
+                                //Get label
+                                gameWindow.getButtonGameReset().setText("Game Reset");
+                            }
+                            else {
+                                interactionEnabled = true;
+                            }
+
+                        });
                     }
                 }
             }
@@ -106,16 +151,17 @@ public class HanoiGroup extends Group {
     private void instantiateDisks(){
         double diskWidthFactor = 1;
         double widthFactorDecrement = 0.8 / numberOFDisks;
-        heightFactor = (numberOFDisks / 15)/(Math.sqrt((1+(numberOFDisks / 15) * (numberOFDisks / 15))));
+        heightFactor = (numberOFDisks / 15d) / (Math.sqrt(1 + (numberOFDisks / 15d) * (numberOFDisks / 15d))); // Sigmoid function for determining disk's height
         disks = new Disk[numberOFDisks];
-        for(int i = 0 ; i< disks.length; i++){
-            disks[i] = new Disk(5,diskWidthFactor * DISK_RADIUS, (float)(heightFactor * ROD_HEIGHT)/numberOFDisks);
-            disks[i].setTranslateY(-0.5 * ((heightFactor*ROD_HEIGHT)/numberOFDisks) - i * ((heightFactor*ROD_HEIGHT)/numberOFDisks));
+        for (int i = 0; i < disks.length; i++) {
+            disks[i] = new Disk(5, diskWidthFactor * DISK_RADIUS, (float)(heightFactor * ROD_HEIGHT) / numberOFDisks);
+            disks[i].setTranslateY(-0.5 * ((heightFactor * ROD_HEIGHT) / numberOFDisks) - i * ((heightFactor * ROD_HEIGHT) / numberOFDisks));
             disks[i].setTranslateX(-0.25 * PLATFORM_WIDTH);
             disks[i].setShading(material);
             rods[0].push(disks[i]);
+
             super.getChildren().add(disks[i]);
-            diskWidthFactor -=widthFactorDecrement;
+            diskWidthFactor -= widthFactorDecrement;
         }
     }
     public Rod[] getRods(){
